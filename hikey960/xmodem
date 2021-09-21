@@ -1,0 +1,24 @@
+#! /usr/bin/kermit +
+
+set background on
+set port /dev/ttyUSB0
+set speed 115200
+set carrier-watch off
+set prefixing all
+set parity none
+set stop-bits 1
+set modem none
+set flow-control none
+set prompt "Kermit> "
+set transfer translation off
+set transfer mode manual
+
+lineout loadx $kernel_addr_r
+send /protocol:xmodem \%1
+
+input 10 "U-Boot => "
+if fail stop 1 No U-Boot prompt
+
+lineout bootefi $kernel_addr_r
+
+exit

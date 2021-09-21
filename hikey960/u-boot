@@ -1,0 +1,61 @@
+#!/bin/sh
+
+#
+# Copyright (c) 2021 Martin Decky
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# - Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# - Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# - The name of the author may not be used to endorse or promote products
+#   derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# This script allows to deploy L4Re conveniently to the HiKey960 board
+# running the U-Boot firmware connected to the host machine using the xmodem
+# protocol.
+
+check_error() {
+	if [ "$1" -ne "0" ] ; then
+		echo
+		echo "Error: $2"
+
+		exit 1
+	fi
+}
+
+SCRIPT_DIR="$(readlink -f $(dirname "$0"))"
+
+if [ "$#" -lt "1" ] ; then
+	echo "Usage: $0 <bootstrap.efi>"
+	exit 2
+fi
+
+IMAGE="$1"
+
+if [ ! -f "${IMAGE}" ] && [ ! -L "${IMAGE}" ] ; then
+	echo "Error: ${IMAGE} is not a file"
+	exit 3
+fi
+
+# Deploy the UEFI image on a HiKey960 board running U-Boot connected to the host machine using xmodem
+# Create the fastboot image with a fake "RAM disk"
+"${SCRIPT_DIR}/xmodem" ${IMAGE}
+check_error $? "Deploying ${IMAGE}"
